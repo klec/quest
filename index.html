@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        * {margin: 0px; padding: 0px;  font-size: 8vw;}
+        body {overflow: hidden; height: 100vh; font-style: italic;}
+            #imgs {width: 80vw; float: left; display: none;}
+            .step {height: 100vh}
+        #dialog {width: 100vw; float: left; height: 100vh;background-color: #cccccc}
+        #dialog #log{height: 80vh; overflow: scroll}
+        #answer-text{width: 100vw; height:8vh; float: left;}
+        button {width: 25vw; height: 10vh; float: right; margin: 0px 1vw}
+        .question {float: left; background-color: aliceblue;}
+        .answer {float: right; text-align: right;background-color: beige;}
+        .question, .answer {
+            width: 90%;
+            border-radius: 5px;
+            margin: 2px;
+            padding: 2px 5px;
+
+        }
+    </style>
+</head>
+<body>
+    <div id="dialog">
+        <div id="log">
+        </div>
+        <div id="answer">
+            <textarea id="answer-text"></textarea>
+            <button id="enter">Ввод</button>
+            <button id="yes" value="да">Да</button>
+            <button id="no" value="нет">Нет</button>
+        </div>
+    </div>
+</body>
+<script>
+    var steps = {
+        1:{message: "Ну что, начнем?", buttons:{yes:true,no:true,enter:false}, answers:{2: "да", 3: "нет"}},
+        2:{message: "Круто.. Начинаем!. Первое задание будет найти здание Летнего театра в Горсаду.. " +
+        "Что бы я убедился что ты там, введи количество досок на ближайшей к зданию лавочке.", buttons:{yes:false,no:false,enter:true}, answers: {4:"4", 5:"*"}},
+        3:{message: "В смысле?. А! Теперь ты издеваешься?. В общем начинаем!. Первое задание будет найти здание Летнего театра в Горсаду.. " +
+        "Что бы я убедился что ты там, введи количество досок на ближайшей к зданию лавочке. ", buttons:{yes:false,no:false,enter:true}, answers: {4:"4", 5:"*"}},
+        4:{message: "Правильно!. Ну или угадала :). Теперь нам нужно на ту сторону реки.. Самый быстрый способ туда добраться - Тарзанка.. Вперед!. " +
+        "Мото с дядей догонят тебя там. Добралась?", buttons:{yes:true,no:true,enter:false}, answers: {6:"да"}},
+        5:{message: "Точно?. Ты считала у той, которая справа?. Нука пересчитай!. ", buttons:{yes:false,no:false,enter:true}, answers: {4:"4", 5:"*"}},
+        6:{message: "Молодец!. А где мото с дядей?. Может ты не на ту станцию прибыла?. Какого цвет горки, по которой спустилась?. желтый, красный, синый",
+            buttons:{yes:false,no:false,enter:true}, answers: {7:"желтый", 8:"*"}},
+        7:{message: "Все правильно.. Значит сейчас прибегут.. Возьмешь у Мото записочку со следующим заданием, если не поймешь как прочитать, могу подсказать.. Подсказывать?",
+            buttons:{yes:true,no:true,enter:false}, answers: {9:"да", 10:"нет"}},
+        8:{message: "Ммм. нет. Еще варианты?", buttons:{yes:false,no:false,enter:true}, answers: {7:"желтый", 8:"*"}},
+        9:{message: "Ее над огнем надо подержать - проявится текст.. У Мото для этого свечка приныкана.. Только не спалите.. Получилось?",
+            buttons:{yes:true,no:true,enter:false}, answers: {10:"да", 11:"нет"}},
+        10:{message: "Сколько наловили за минуту?", buttons:{yes:false,no:false,enter:true}, answers: {12:"*"}},
+        11:{message: "В общем Мото надо наловить рыбы на обед.. Рассказжешь сколько наловили за минуту.", buttons:{yes:false,no:false,enter:true}, answers: {12:"*"}},
+        12:{message: "Замечательно!. Если успеваете, то подарите столько же шариков деткам в округе, " +
+        "но помните в 13:00 вам надо быть около дядиной работы.. Скажешь когда справитесь", buttons:{yes:false,no:false,enter:true}, answers: {13:"*"}},
+        13:{message: "Сколько колон у здания ЦНТИ?", buttons:{yes:false,no:false,enter:true}, answers: {14:"*"}},
+        14:{message: "Да. Где то так.. Утомились небось уже, подрастрепались.. Направляйтесь в ближайший салон красоты.. " +
+            "Тебе там челочку поправят, да укладку обновят.. Скажешь потом, понравилось или нет.", buttons:{yes:true,no:true,enter:false}, answers: {15: "да", 16: "нет"}},
+        15:{message: "Вот и хорошо.. Теперь самое ответственное задание.. Отправляйтесь в Хряк и отметьте это дело.. Вас там ждет столик на троих в дальнем левом углу.",
+            buttons:{yes:false,no:false,enter:true}, answers: {17:"*"}},
+        16:{message: "Ой беда, беда.. Надеюсь вкуснейшее пиво в Хряке поможет отвлечься.. Вас там ждет столик на троих в дальнем левом углу.. Только дяде не давай пить, он за рулем",
+            buttons:{yes:false,no:false,enter:true}, answers: {17:"*"}},
+        17:{message: "Вы отлично справились.", buttons:{yes:false,no:false,enter:true}, answers: {}}
+    };
+
+    var log = document.getElementById("log");
+    var yes = document.getElementById("yes");
+    var no = document.getElementById("no");
+    var enter = document.getElementById("enter");
+    var answer = document.getElementById("answer-text");
+
+    enter.onclick = processAnswer;
+    yes.onclick = doAnswer;
+    no.onclick = doAnswer;
+    //var acceptableAnswer = "*";
+    var currentStep = 1;
+
+    function showStep(id){
+        var messages = steps[id].message.split(/[\.\!\?] /g);
+        for(i in messages) {
+            addMessage(messages[i], "question");
+        }
+        acceptableAnswer = steps[id].answers;
+        currentStep = id;
+        showButtons(steps[id].buttons);
+    }
+
+    function showButtons(buttons){
+        yes.style.display = (buttons.yes)?"":"none";
+        no.style.display = (buttons.no)?"":"none";
+        enter.style.display = (buttons.enter)?"":"none";
+    }
+
+    function doAnswer() {
+        answer.value = this.value;
+        processAnswer();
+    }
+    function processAnswer() {
+        if(answer.textLength>0) {
+            addMessage(answer.value, "answer");
+        }
+        for(var i= 1; i< 20; i++) {
+            if (steps[currentStep].answers[i] == "*" || answer.value == steps[currentStep].answers[i]) {
+                showStep(i);
+                break;
+            }
+        }
+        answer.value = "";
+    }
+
+    function addMessage(text, type){
+        var div = document.createElement("DIV");
+        var message = document.createTextNode(text);
+
+        div.appendChild(message);
+        div.className = type;
+        log.appendChild(div)
+    }
+
+    function showTeaser() {
+        var words = {
+            1: "Все еще рановато.",
+            2: "Вот жеж ты не терпеливая.",
+            3: "Я в тебя верю, ты дотерпишь.",
+            4: "Еще чуть чуть и начнем.",
+            5: "Полежи еще, отдохни.",
+            6: "Самому не терпиться, но еще рано.",
+            7: "Попробуй обновить когда большая и маленькая стрелочки будут на 12.",
+            8: "Расслабься пока, выпей чаю.",
+            9: "Ты уже наверное в предвкушении но еще рано."
+        }
+        var rnd = Math.floor((Math.random() * 10) + 1);
+        addMessage(words[rnd],"question");
+    }
+
+window.onload = function(){
+        var d = new Date();
+        if(d.getHours()>11) {
+            showStep(currentStep);
+        } else {
+            showButtons({yes:false,no:false,enter:false});
+            showTeaser();
+        }
+    }
+</script>
+</html>
