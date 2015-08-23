@@ -16,7 +16,7 @@
         .answer {float: right; text-align: right;background-color: beige;}
         .question, .answer {
             width: 90%;
-            border-radius: 5px;
+            border-radius: 2vw;
             margin: 2px;
             padding: 2px 5px;
 
@@ -120,30 +120,10 @@
         log.appendChild(div)
     }
 
-    function showTeaser() {
-        var words = {
-            1: "Все еще рановато.",
-            2: "Вот жеж ты не терпеливая.",
-            3: "Я в тебя верю, ты дотерпишь.",
-            4: "Еще чуть чуть и начнем.",
-            5: "Полежи еще, отдохни.",
-            6: "Самому не терпиться, но еще рано.",
-            7: "Попробуй обновить когда большая и маленькая стрелочки будут на 12.",
-            8: "Расслабься пока, выпей чаю.",
-            9: "Ты уже наверное в предвкушении но еще рано."
-        }
-        var rnd = Math.floor((Math.random() * 10) + 1);
-        addMessage(words[rnd],"question");
-    }
 
 window.onload = function(){
         var d = new Date();
-        if(d.getHours()>11) {
-            showStep(currentStep);
-        } else {
-            showButtons({yes:false,no:false,enter:false});
-            showTeaser();
-        }
+        showStep(currentStep);
     }
 </script>
 </html>
